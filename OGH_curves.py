@@ -4,19 +4,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def counterclockwise_angle(v):
+    angle = np.arctan2(v[1],v[0])
+    return angle if angle >= 0 else 2*np.pi + angle
+
 def angle_between_vectors(a, b):
     """Returns the angle in radians between vectors a and b"""
-    angle_a = -np.arctan2(a[1], a[0])
-    angle_b = -np.arctan2(b[1], b[0])
-    return (angle_a - angle_b)[0] if angle_a >= angle_b else (angle_b - angle_a)[0]
+    angle_a = counterclockwise_angle(a)
+    angle_b = counterclockwise_angle(b)
+    angle =  angle_a - angle_b if angle_a >= angle_b else angle_b - angle_a
+    return angle if angle <= np.pi else 2*np.pi - angle
 
 def vector_from_angle(angle : float, magnitude : float = 1):
     """Returns a vector with a given angle and length"""
     return magnitude * np.array([np.cos(angle),np.sin(angle)])
-
-def counterclockwise_angle(angle):
-    """Returns the counterclockwise angle given either an already counterclockwise angle or a negative clockwise angle."""
-    return angle if angle >= 0 else np.pi - angle
 
 def Q(p0, p1, v0, v1, t0, t1, t):
     """Basic Hermite curve."""
@@ -54,7 +55,7 @@ def COH(p0, p1, v0, v1, t0, t1, t):
     print("phi  : {}pi".format(phi))
 
     # alpha is the counterclockwise angle of the vector p0p1 from the x-axis.
-    alpha : float = np.arctan2((p1-p0)[1],(p1-p0)[0])
+    alpha : float = counterclockwise_angle(p1-p0)
 
     # If tangent direction preserving conditions are met, use an OGH.
     if 3*np.cos(theta) > np.cos(theta - 2*phi) and 3*np.cos(phi) > np.cos(phi - 2*theta):
@@ -64,10 +65,10 @@ def COH(p0, p1, v0, v1, t0, t1, t):
     # Method M1 for generating two-segment COH.
     elif (0 <= theta <= np.pi/6) and (np.pi/3 <= phi <= 2*np.pi/3):
         print("M1")
-
         pT = p1 - vector_from_angle(phi/2 + alpha, np.linalg.norm(p1-p0)/3)
-        beta : float = angle_between_vectors(pT-p0, p1-pT)
-        vT = vector_from_angle(beta/2 + alpha)
+        beta : float = angle_between_vectors(pT-p0,p1-pT)
+        gamma : float = counterclockwise_angle(pT-p0)
+        vT = vector_from_angle(alpha + beta/2 + gamma)
         return np.concatenate([OGH(p0,pT,v0,vT,t0,t1,t),OGH(pT,p1,vT,v1,t0,t1,t)],axis=1)
 
     # Method M2 for generating two-segment COH.
@@ -88,18 +89,12 @@ def COH(p0, p1, v0, v1, t0, t1, t):
     else:
         print("WIP")
 
-
-test = np.arctan2([1],[-1])
-print("test",test)
-
-#TODO fix M2, something with angles not being right (counterclockwise vs clockwise stuff)
-
 # Parameters.
-p0 = np.array([[-2], [0]])
-v0 = np.array([[2], [1]])
+p0 = np.array([[-5], [0]])
+v0 = np.array([[3], [1]])
 
-p1 = np.array([[2], [0]])
-v1 = np.array([[-1], [-1]])
+p1 = np.array([[5], [-1]])
+v1 = np.array([[-1], [3]])
 
 t0 = 0
 t1 = 1
