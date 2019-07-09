@@ -57,23 +57,23 @@ def COH(p0, p1, v0, v1, t0, t1, t):
     # alpha is the counterclockwise angle of the vector p0p1 from the x-axis.
     alpha : float = counterclockwise_angle(p1-p0)
 
-    # If tangent direction preserving conditions are met, use an OGH.
+    # M0: simple OGH curve.
     if 3*np.cos(theta) > np.cos(theta - 2*phi) and 3*np.cos(phi) > np.cos(phi - 2*theta):
         print("M0")
         return OGH(p0, p1, v0, v1, t0, t1, t)
 
-    # Method M1 for generating two-segment COH.
+    # M1: two-segment COH curve.
     elif (0 <= theta <= np.pi/6) and (np.pi/3 <= phi <= 2*np.pi/3):
         print("M1")
 
         pT = p1 - vector_from_angle(phi/2 + alpha, np.linalg.norm(p1-p0)/3)
         beta : float = angle_between_vectors(pT-p0,p1-pT)
         gamma : float = counterclockwise_angle(pT-p0)
-        vT = vector_from_angle(alpha + beta/2 + gamma)
+        vT = vector_from_angle(beta/2 + gamma)
 
         return np.concatenate([OGH(p0,pT,v0,vT,t0,t1,t),OGH(pT,p1,vT,v1,t0,t1,t)],axis=1)
 
-    # Method M2 for generating two-segment COH.
+    # M2: two-segment COH curve.
     elif ((0 <= theta <= np.pi/3) and (np.pi <= phi <= 5*np.pi/3)) or ((np.pi/3 <= theta <= 2*np.pi/3) and (4*np.pi/3 <= phi <= 5*np.pi/3)):
         print("M2")
 
@@ -89,13 +89,15 @@ def COH(p0, p1, v0, v1, t0, t1, t):
         
         return np.concatenate([OGH(p0,pT,v0,vT,t0,t1,t),OGH(pT,p1,vT,v1,t0,t1,t)],axis=1)
     
+    # M3: three-segment COH curve.
     elif (0 <= theta <= np.pi/3) and (np.pi/3 <= phi <= np.pi):
         print("M3")
 
         beta : float = phi/3
         a1 : float = (theta - beta)/2 - np.pi/18
         a3 : float = 17*np.pi/9
-        a4 : float = (a4 + phi - beta)/2 - np.pi
+        a5 : float = phi - beta
+        a4 : float = (a3 + a5)/2 - np.pi
 
         if np.pi/18 < abs(a3 - a1) < np.pi:
             A : float = abs(a3 - a1)
@@ -108,7 +110,13 @@ def COH(p0, p1, v0, v1, t0, t1, t):
 
         pT0 = p0 + vector_from_angle(alpha + a1, np.linalg.norm(p1-p0)/(2*np.cos(a1)))
         vT0 = vector_from_angle(alpha + a2)
-        pT1 = pT0 + vector_from_angle() #TODO Might have to do similar trig stuff as in M2.
+
+        L : float = np.pi - a3 - a5
+        l = np.linalg.norm(p1-pT0)
+        K = angle_between_vectors(p0-p1,p1-pT0)
+        k = l*np.sin(a3+K) / np.sin(L)
+
+        pT1 = p1 - vector_from_angle(a5,k)
         vT1 = vector_from_angle(alpha + a4)
 
         return np.concatenate([OGH(p0,pT0,v0,vT0,t0,t1,t),OGH(pT0,pT1,vT0,vT1,t0,t1,t),OGH(pT1,p1,vT1,v1,t0,t1,t)],axis=1)
@@ -118,10 +126,10 @@ def COH(p0, p1, v0, v1, t0, t1, t):
 
 # Parameters.
 p0 = np.array([[-5], [0]])
-v0 = np.array([[3], [1]])
+v0 = np.array([[1], [1]])
 
-p1 = np.array([[5], [-1]])
-v1 = np.array([[-1], [3]])
+p1 = np.array([[5], [3]])
+v1 = np.array([[-5], [-1]])
 
 t0 = 0
 t1 = 1
