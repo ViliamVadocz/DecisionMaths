@@ -1,4 +1,4 @@
-'''Optimised Geometric Hermite Curves'''
+'''Composite Optimised Geometric Hermite Curves'''
 # http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.1622&rep=rep1&type=pdf
 
 import numpy as np
@@ -65,15 +65,18 @@ def COH(p0, p1, v0, v1, t0, t1, t):
     # Method M1 for generating two-segment COH.
     elif (0 <= theta <= np.pi/6) and (np.pi/3 <= phi <= 2*np.pi/3):
         print("M1")
+
         pT = p1 - vector_from_angle(phi/2 + alpha, np.linalg.norm(p1-p0)/3)
         beta : float = angle_between_vectors(pT-p0,p1-pT)
         gamma : float = counterclockwise_angle(pT-p0)
         vT = vector_from_angle(alpha + beta/2 + gamma)
+
         return np.concatenate([OGH(p0,pT,v0,vT,t0,t1,t),OGH(pT,p1,vT,v1,t0,t1,t)],axis=1)
 
     # Method M2 for generating two-segment COH.
     elif ((0 <= theta <= np.pi/3) and (np.pi <= phi <= 5*np.pi/3)) or ((np.pi/3 <= theta <= 2*np.pi/3) and (4*np.pi/3 <= phi <= 5*np.pi/3)):
         print("M2")
+
         A : float = np.pi/18 if theta < np.pi/9 else theta/2
         B : float = 2*np.pi - phi - (2*np.pi-phi+theta-A)/3
         C : float = np.pi - A - B
@@ -86,6 +89,30 @@ def COH(p0, p1, v0, v1, t0, t1, t):
         
         return np.concatenate([OGH(p0,pT,v0,vT,t0,t1,t),OGH(pT,p1,vT,v1,t0,t1,t)],axis=1)
     
+    elif (0 <= theta <= np.pi/3) and (np.pi/3 <= phi <= np.pi):
+        print("M3")
+
+        beta : float = phi/3
+        a1 : float = (theta - beta)/2 - np.pi/18
+        a3 : float = 17*np.pi/9
+        a4 : float = (a4 + phi - beta)/2 - np.pi
+
+        if np.pi/18 < abs(a3 - a1) < np.pi:
+            A : float = abs(a3 - a1)
+        elif np.pi < abs(a3 - a1) < 35*np.pi/18:
+            A : float = 2*np.pi - abs(a3 - a1)
+        else:
+            A : float = np.pi/18
+
+        a2 : float = a1 - 2*A
+
+        pT0 = p0 + vector_from_angle(alpha + a1, np.linalg.norm(p1-p0)/(2*np.cos(a1)))
+        vT0 = vector_from_angle(alpha + a2)
+        pT1 = pT0 + vector_from_angle() #TODO Might have to do similar trig stuff as in M2.
+        vT1 = vector_from_angle(alpha + a4)
+
+        return np.concatenate([OGH(p0,pT0,v0,vT0,t0,t1,t),OGH(pT0,pT1,vT0,vT1,t0,t1,t),OGH(pT1,p1,vT1,v1,t0,t1,t)],axis=1)
+
     else:
         print("WIP")
 
