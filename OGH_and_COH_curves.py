@@ -61,6 +61,7 @@ def COH(p0, p1, v0, v1, t0, t1, t):
     # M0: simple OGH curve.
     if 3*np.cos(theta) > np.cos(theta - 2*phi) and 3*np.cos(phi) > np.cos(phi - 2*theta):
         print("M0")
+        plt.title("M0")
         return OGH(p0, p1, v0, v1, t0, t1, t)
 
     # M1: two-segment COH curve.
@@ -87,8 +88,8 @@ def COH(p0, p1, v0, v1, t0, t1, t):
         c : float = np.linalg.norm(p1-p0)
         b : float = c * np.sin(B) / np.sin(C)
 
-        pT = p0 + vector_from_angle(B + alpha, b)
-        vT = vector_from_angle(B - (2*np.pi-phi+theta-A)/3)
+        pT = p0 + vector_from_angle(A + alpha, b)
+        vT = vector_from_angle(A - (2*np.pi-phi+theta-A)/3)
         
         return np.concatenate([OGH(p0,pT,v0,vT,t0,t1,t),OGH(pT,p1,vT,v1,t0,t1,t)],axis=1)
     
@@ -98,7 +99,7 @@ def COH(p0, p1, v0, v1, t0, t1, t):
         plt.title("M3")
 
         beta : float = phi/3
-        a1 : float = (theta - beta)/2 - np.pi/18
+        a1 : float = (theta-beta)/2 - np.pi/18 if (theta-beta)/2 - np.pi >= 0 else (theta-beta)/2 + 35*np.pi/18
         a3 : float = 17*np.pi/9
         a5 : float = phi - beta
         a4 : float = (a3 + a5)/2 - np.pi
@@ -112,15 +113,20 @@ def COH(p0, p1, v0, v1, t0, t1, t):
 
         a2 : float = a1 - 2*A
 
+        print("a1",a1)
+        print("a2",a2)
         pT0 = p0 + vector_from_angle(alpha + a1, np.linalg.norm(p1-p0)/(2*np.cos(a1)))
         vT0 = vector_from_angle(alpha + a2)
 
-        L : float = np.pi - a3 - a5
+        L : float = a3 - a5 - np.pi
         l : float = np.linalg.norm(p1-pT0)
         K : float = angle_between_vectors(p0-p1,pT0-p1)
-        k : float = l*np.sin(a3+K) / np.sin(L)
+        k : float = l*np.sin(2*np.pi-a3+K) / np.sin(L)
 
-        pT1 = p1 - vector_from_angle(a5,k)
+        print("L",L)
+        print("K",K)
+        print("k",k)
+        pT1 = p1 - vector_from_angle(alpha + a5, k)
         vT1 = vector_from_angle(alpha + a4)
 
         return np.concatenate([OGH(p0,pT0,v0,vT0,t0,t1,t),OGH(pT0,pT1,vT0,vT1,t0,t1,t),OGH(pT1,p1,vT1,v1,t0,t1,t)],axis=1)
@@ -142,24 +148,34 @@ def COH(p0, p1, v0, v1, t0, t1, t):
     else:
         print("WIP")
 
-# Parameters.
-p0 = np.array([[-5], [0]])
-v0 = np.array([[1], [4]])
+def test(theta_min, theta_max, phi_min, phi_max):
+    theta = np.random.uniform(theta_min, theta_max)
+    phi = np.random.uniform(phi_min, phi_max)
 
-p1 = np.array([[5], [0]])
-v1 = np.array([[1], [1]])
+    p0 = np.array([[-10], [0]])     #np.random.uniform(-10,10,size=(2,1))
+    p1 = np.array([[10], [0]])      #np.random.uniform(-10,10,size=(2,1))
 
-t0 = 0
-t1 = 1
+    alpha = counterclockwise_angle(p1-p0)
 
-v0 = v0 / np.linalg.norm(v0)
-v1 = v1 / np.linalg.norm(v1)
+    v0 = vector_from_angle(alpha + theta)
+    v1 = vector_from_angle(alpha + phi)
 
-n : int = 1000
-a = np.linspace(t0, t1, n)
-b = COH(p0, p1, v0, v1, t0, t1, a)
+    t0 = 0
+    t1 = 1
 
-# Plots curve.
-plt.plot(b[0], b[1], '-b')
+    n : int = 1000
+    a = np.linspace(t0, t1, n)
+    b = COH(p0, p1, v0, v1, t0, t1, a)
 
-plt.show()
+    plt.plot(b[0], b[1], '-b')
+    plt.show()
+
+def test_all():
+    test(-1,1,-1,1)                             # M0
+    test(0,np.pi/6,np.pi/3,2*np.pi/3)           # M1
+    test(0,np.pi/3,np.pi,5*np.pi/3)             # M2 part 1
+    test(np.pi/3,2*np.pi/3,4*np.pi/3,5*np.pi/3) # M2 part 2
+    test(0,np.pi/3,np.pi/3,np.pi)               # M3
+    test(np.pi/3,2*np.pi/3,0,2*np.pi/3)         # M4
+
+test_all()
