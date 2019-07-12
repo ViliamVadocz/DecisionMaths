@@ -164,7 +164,33 @@ def COH(p0, p1, v0, v1, t0, t1, t):
         vT1 = vector_from_angle(alpha + theta - 4*beta)
 
         return np.concatenate([OGH(p0,pT0,v0,vT0,t0,t1,t),OGH(pT0,pT1,vT0,vT1,t0,t1,t),OGH(pT1,p1,vT1,v1,t0,t1,t)],axis=1)
+    
+    elif (2*np.pi/3 <= theta <= np.pi) and (np.pi/6 <= phi <= 2*np.pi/3):
+        print("M6")
+        plt.title("M6")
+
+        #TODO Still sometimes breaks.
         
+        a5 = phi/2
+        beta = (2*np.pi + a5 - theta)/5
+        l = np.linalg.norm(p1-p0)
+
+        print("a5",a5)
+        print("beta",beta)
+        print("l",l)
+
+        pT0 = p0 + vector_from_angle(alpha + theta + beta, l/2)
+        vT0 = vector_from_angle(alpha + theta + 2*beta)
+
+        a = np.sqrt(l*l*(5/4 - np.cos(theta - beta)))
+        A = np.pi - 2*beta + np.arccos((a*a - 3*l*l/4) / (a*l))
+        x = a * np.sin(A) / np.sin(np.pi - 2*beta)
+
+        pT1 = p1 - vector_from_angle(alpha + a5, x)
+        vT1 = vector_from_angle(alpha + theta + 4*beta)
+
+        return np.concatenate([OGH(p0,pT0,v0,vT0,t0,t1,t),OGH(pT0,pT1,vT0,vT1,t0,t1,t),OGH(pT1,p1,vT1,v1,t0,t1,t)],axis=1)
+
     else:
         print("WIP")
 
@@ -199,6 +225,7 @@ def test_all():
     test(np.pi/3,2*np.pi/3,0,2*np.pi/3)         # M4
     test(np.pi/3,2*np.pi/3,np.pi,4*np.pi/3)     # M5 part 1
     test(2*np.pi/3,np.pi,np.pi,5*np.pi/3)       # M5 part 2
+    test(2*np.pi/3,np.pi,np.pi/6,2*np.pi/3)     # M6
 
 
 test_all()
