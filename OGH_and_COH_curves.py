@@ -113,8 +113,6 @@ def COH(p0, p1, v0, v1, t0, t1, t):
 
         a2 : float = a1 - 2*A
 
-        print("a1",a1)
-        print("a2",a2)
         pT0 = p0 + vector_from_angle(alpha + a1, np.linalg.norm(p1-p0)/(2*np.cos(a1)))
         vT0 = vector_from_angle(alpha + a2)
 
@@ -123,9 +121,6 @@ def COH(p0, p1, v0, v1, t0, t1, t):
         K : float = angle_between_vectors(p0-p1,pT0-p1)
         k : float = l*np.sin(2*np.pi-a3+K) / np.sin(L)
 
-        print("L",L)
-        print("K",K)
-        print("k",k)
         pT1 = p1 - vector_from_angle(alpha + a5, k)
         vT1 = vector_from_angle(alpha + a4)
 
@@ -145,6 +140,31 @@ def COH(p0, p1, v0, v1, t0, t1, t):
 
         return np.concatenate([OGH(p0,pT0,v0,vT0,t0,t1,t),OGH(pT0,pT1,vT0,vT1,t0,t1,t),OGH(pT1,p1,vT1,v1,t0,t1,t)],axis=1)
 
+    elif ((np.pi/3 <= theta <= 2*np.pi/3) and (np.pi <= phi <= 4*np.pi/3)) or ((2*np.pi/3 <= theta <= np.pi) and (np.pi <= phi <= 5*np.pi/3)):
+        print("M5")
+        plt.title("M5")
+
+        r = np.linalg.norm(p1-p0)/2
+        beta : float = (theta - phi + 2*np.pi)/6
+
+        A = 3*beta - theta + np.pi/2
+        A_prime = (np.pi - A) / 2
+        A_side = np.sqrt(2*r*r - r*r*np.cos(A))
+        k = A_side*np.sin(np.pi/2-A_prime) / np.sin(np.pi-2*beta)
+
+        pT0 = p0 + vector_from_angle(alpha + theta - beta, k)
+        vT0 = vector_from_angle(alpha + theta - 2*beta)        
+
+        B = 3*beta + phi - 3*np.pi/2
+        B_prime = (np.pi - B) / 2
+        B_side = np.sqrt(2*r*r - r*r*np.cos(B))
+        l = B_side*np.sin(np.pi/2-B_prime) / np.sin(np.pi-2*beta)
+        
+        pT1 = p1 - vector_from_angle(alpha + phi + beta, l)
+        vT1 = vector_from_angle(alpha + theta - 4*beta)
+
+        return np.concatenate([OGH(p0,pT0,v0,vT0,t0,t1,t),OGH(pT0,pT1,vT0,vT1,t0,t1,t),OGH(pT1,p1,vT1,v1,t0,t1,t)],axis=1)
+        
     else:
         print("WIP")
 
@@ -177,5 +197,8 @@ def test_all():
     test(np.pi/3,2*np.pi/3,4*np.pi/3,5*np.pi/3) # M2 part 2
     test(0,np.pi/3,np.pi/3,np.pi)               # M3
     test(np.pi/3,2*np.pi/3,0,2*np.pi/3)         # M4
+    test(np.pi/3,2*np.pi/3,np.pi,4*np.pi/3)     # M5 part 1
+    test(2*np.pi/3,np.pi,np.pi,5*np.pi/3)       # M5 part 2
+
 
 test_all()
