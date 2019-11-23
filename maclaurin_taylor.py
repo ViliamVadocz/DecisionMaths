@@ -1,20 +1,9 @@
 import matplotlib.pyplot as plt
-
-from numpy import gradient
 from math import factorial
-
-from autograd import grad, elementwise_grad
+from autograd import grad
 import autograd.numpy as np
 
-# Not used
-def differentiate(x, y):
-    dx_dt = gradient(x)
-    dy_dt = gradient(y)
-
-    dy_dx = dy_dt / dx_dt
-
-    return dy_dx
-
+# My own function class that allows for combining functions into one by summing.
 class MyFunction:
     def __init__(self, func=lambda x: 0):
         self.func = func
@@ -27,7 +16,17 @@ class MyFunction:
             return self(*args, **kwargs) + other(*args, **kwargs)
         return MyFunction(summed)
 
-def maclaurin(func, degree : int):
+def maclaurin_func(func, degree : int):
+    """Find the Maclaurin expansion of the given function to the given degree.
+    Returns the function.
+    
+    Arguments:
+        func {function} -- The function which to approximate.
+        degree {int} -- Degree of the resulting expansion.
+    
+    Returns:
+        function -- The Maclaurin expansion function.
+    """
     def term(const, power):
         return lambda x: const * x**power
 
@@ -35,19 +34,103 @@ def maclaurin(func, degree : int):
 
     for r in range(degree):
         k = func(0.0) / factorial(r)
-        expansion = expansion + term(k, r)
+        expansion += term(k, r)
         func = grad(func)
 
     return expansion
 
+def maclaurin_str(func, degree : int):
+    """Find the Maclaurin expansion of the given function to the given degree.
+    Returns the string representation.
+    
+    Arguments:
+        func {function} -- The function which to approximate.
+        degree {int} -- Degree of the resulting expansion.
+    
+    Returns:
+        str -- The Maclaurin expansion string.
+    """
+    def term(const, power):
+        return f'{const:.3f}*(x^{power} /{power}!) + \n'
 
-# TODO Taylor expansion
+    expansion = ''
+
+    for r in range(degree):
+        expansion += term(func(0.0), r)
+        func = grad(func)
+
+    return expansion[:-4]
+
+def taylor_func(func, degree : int, a : float=0.0):
+    """Find the Taylor expansion of the given function to the given degree centered at point given by a.
+    Returns the function.
+    
+    Arguments:
+        func {function} -- The function which to approximate.
+        degree {int} -- Degree of the resulting expansion.
+        a {float} -- The point at which to take derivative information.
+    
+    Returns:
+        function -- The Taylor expansion function.
+    """
+    def term(const, power):
+        return lambda x: const * (x - a)**power
+
+    if type(a) is not float:
+        a = float(a)
+
+    expansion = MyFunction()
+
+    for r in range(degree):
+        k = func(a) / factorial(r)
+        expansion += term(k, r)
+        func = grad(func)
+
+    return expansion
+
+def taylor_str(func, degree : int, a : float=0.0):
+    """Find the Taylor expansion of the given function to the given degree centered at point given by a.
+    Returns the string representation.
+    
+    Arguments:
+        func {function} -- The function which to approximate.
+        degree {int} -- Degree of the resulting expansion.
+        a {float} -- The point at which to take derivative information.
+    
+    Returns:
+        str -- The Taylor expansion string.
+    """
+    def term(const, power):
+        if a >= 0:
+            return f'{const:.3f}*((x-{a})^{power} /{power}!) + \n'
+        else:
+            return f'{const:.3f}*((x+{-a})^{power} /{power}!) + \n'
+
+
+    if type(a) is not float:
+        a = float(a)
+
+    expansion = ''
+
+    for r in range(degree):
+        expansion += term(func(a), r)
+        func = grad(func)
+
+    return expansion[:-4]
 
 # Test
 def f(x):
-    return np.sin(x) - np.exp(-x/5)
+    return np.exp(x/10) * np.sin(4*x)
 
-expansion = maclaurin(f, 20)
+deg = 10
+# expansion = maclaurin_func(f, deg)
+# string = maclaurin_str(f, deg)
+# print(string)
+
+a = -3
+expansion = taylor_func(f, deg, a)
+string = taylor_str(f, deg, a)
+print(string)
 
 x = np.linspace(-20.0, 20.0, 1000)
 y1 = f(x)
