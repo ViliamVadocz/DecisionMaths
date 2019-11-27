@@ -32,21 +32,31 @@ def H(n):
 
 def M(n):
     """
-    Generate Hadamard matrix and replace all -1 with 1 and 1 with 0.
+    Generate Hadamard matrix but with
+        -1 as 1,
+        1 as 0.
     """
     return  np.abs((H(n) - 1) / 2)
 
 def M2(n):
+    """
+    Generate Hadamard matrix but with
+        -1 as 0,
+        1 as 1.
+    """
     return  (H(n) + 1) / 2
 
+# Create image.
+img = Image.fromarray(M2(5).astype('uint8') * 255)
+img.save('reed-muller.png')
+img.show()
+
+# Generate code.
 reed_muller = M(5)
-    
-test = M2(5).astype('uint8') * 255
 
-print(reed_muller)
-print(test)
-
-Reed_Muller = Image.fromarray(test)
-Reed_Muller.save('reed-muller.png')
-Reed_Muller.show()
-    
+# TODO
+# Generate message to send
+# Corrupt message
+# Reconstruct message
+# Decode message
+# Show results   
