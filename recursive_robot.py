@@ -23,16 +23,21 @@ class Robot:
             self.trace.append([self.x, self.y])
         return np.array(self.trace)
 
-def q(n : int):
+"""def q(n : int):
     if n == 0: return 'F'
     return 'F' + q(n-1)
 
 def p(n : int):
     if n == 0: return 'R'
-    return p(n-1) + q(n-1) + 'R' + q(n-1)
+    return p(n-1) + q(n-1) + 'R' + q(n-1)"""
+
+def p(n : int):
+    if n == 0: return 'F'
+    return p(n-1) + 'LF' + p(n-1) + 'FR' + p(n-1)
+    
 
 if __name__ == "__main__":
     robot = Robot()
-    trace = robot.execute(p(100))
+    trace = robot.execute(p(10))
     plt.plot(trace[:,0], trace[:,1])
     plt.show()
