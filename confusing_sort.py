@@ -1,7 +1,7 @@
 # What is the time complexity of this sort?
  
-# List contains positive integers (can include 0).
-my_list = [6, 4, 12, 63, 11, 25, 11, 29, 5, 46, 32, 34, 7]
+# List contains integers.
+my_list = [6, 4, 12, 63, 11, 25, 11, 29, 5, 46, 32, 34, 7, -12, -14]
 
 # Find largest and smallest in list to define range.
 smallest = my_list[0]
@@ -21,7 +21,7 @@ for element in my_list:
 
 # Print tracked list.
 for i, ii in enumerate(track_list):
-    print(ii + smallest, i)
+    print(ii, i + smallest)
 
 # Init sorted list.
 sorted_list = []
