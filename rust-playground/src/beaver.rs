@@ -1,4 +1,4 @@
-const TAPE_LEN: usize = 30;
+const TAPE_LEN: usize = 20;
 
 enum Direction {
     Left,
@@ -49,16 +49,19 @@ struct TuringMachine {
 }
 
 impl TuringMachine {
-    fn execute(&self) {
+    fn execute(&mut self) {
+        println!("current state: {}", self.current_state);
+
         // look at tape
         let pointer_value = self.tape.get(self.pointer_pos).unwrap();
+        println!("pointer at index {} reading: {}", self.pointer_pos, *pointer_value);
 
         // get correct outcome
-        let outcome: Outcome;
+        let outcome: &Outcome;
         if *pointer_value {
-            outcome = self.states.get(self.current_state).unwrap().if_true;
+            outcome = &self.states.get(self.current_state).unwrap().if_true;
         } else {
-            outcome = self.states.get(self.current_state).unwrap().if_false;
+            outcome = &self.states.get(self.current_state).unwrap().if_false;
         }
 
         // see outcome of state
@@ -67,11 +70,18 @@ impl TuringMachine {
             // execute action
             Outcome::Do(action) => {
                 // write to tape at pointer_pos
+                println!("writing: {}", action.write);
                 self.tape[self.pointer_pos] = action.write;
                 // move pointer
                 match action.motion {
-                    Direction::Left => self.pointer_pos -= 1,
-                    Direction::Right => self.pointer_pos += 1
+                    Direction::Left => {
+                        println!("moving: left");
+                        self.pointer_pos -= 1;
+                    },
+                    Direction::Right => {
+                        println!("moving: right");
+                        self.pointer_pos += 1;
+                    }
                 }
                 // transition state
                 self.current_state = action.next_state;
@@ -80,7 +90,15 @@ impl TuringMachine {
     }
 
     fn print_tape(&self) {
-        println!{"{:?}", self.tape};
+        let mut tape: Vec<u8> = vec![];
+        for &element in self.tape.iter() {
+            if element {
+                tape.push(1);
+            } else {
+                tape.push(0);
+            }
+        }
+        println!{"tape: {:?}", tape};
     }
 }
 
@@ -95,30 +113,35 @@ impl TuringMachine {
 pub fn run() {
     type D = Direction;
 
-    let three_state_busy_beaver = vec![
+    // print three ones then halt.
+    let simple_test_machine = vec![
         State::new(
             Outcome::Halt,
-            Outcome::Do(Action::new(true, D::Left, 1))
+            Outcome::Do(Action::new(true, D::Right, 1))
         ),
         State::new(
-            Outcome::Do(Action::new(true, D::Left, 1)),
-            Outcome::Do(Action::new(false, D::Left, 2))
+            Outcome::Halt,
+            Outcome::Do(Action::new(true, D::Right, 2))
         ),
         State::new(
-            Outcome::Do(Action::new(true, D::Right, 0)),
-            Outcome::Do(Action::new(true, D::Right, 0))
+            Outcome::Halt,
+            Outcome::Do(Action::new(true, D::Left, 0))
         )
     ];
 
     let mut beaver = TuringMachine {
         is_running: true,
-        states: three_state_busy_beaver,
+        states: simple_test_machine,
         current_state: 0,
         tape: [false; TAPE_LEN],
-        pointer_pos: TAPE_LEN / 2
+        pointer_pos: 0
     };
 
     while beaver.is_running {
+        println!("");
+        beaver.print_tape();
         beaver.execute();
     }
+
+    println!("The Turing Machine has halted.");
 }
