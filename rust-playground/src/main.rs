@@ -1,5 +1,6 @@
-mod sorts;
+extern crate bit_vec;
+mod beaver;
 
 fn main() {
-    sorts::run();
+    beaver::run();
 }
