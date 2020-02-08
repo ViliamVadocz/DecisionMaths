@@ -1,18 +1,25 @@
 const TAPE_LEN: usize = 20;
 
+#[derive(Clone)]
+#[derive(Copy)]
+enum Alphabet {
+    Zero,
+    One,
+}
+
 enum Direction {
     Left,
     Right
 }
 
 struct Action {
-    write: bool,
+    write: Alphabet,
     motion: Direction,
     next_state: usize
 }
 
 impl Action {
-    fn new (write: bool, motion: Direction, next_state: usize) -> Action {
+    fn new (write: Alphabet, motion: Direction, next_state: usize) -> Action {
         Action {
             write,
             motion,
@@ -27,15 +34,15 @@ enum Outcome {
 }
 
 struct State {
-    if_true: Outcome,
-    if_false: Outcome
+    if_one: Outcome,
+    if_zero: Outcome
 }
 
 impl State {
-    fn new(if_true: Outcome, if_false: Outcome) -> State {
+    fn new(if_one: Outcome, if_zero: Outcome) -> State {
         State {
-            if_true,
-            if_false
+            if_one,
+            if_zero
         }
     }
 }
@@ -44,7 +51,7 @@ struct TuringMachine {
     is_running: bool,
     states: Vec<State>,
     current_state: usize,
-    tape: [bool; TAPE_LEN],
+    tape: [Alphabet; TAPE_LEN],
     pointer_pos: usize
 }
 
@@ -53,15 +60,17 @@ impl TuringMachine {
         println!("current state: {}", self.current_state);
 
         // look at tape
-        let pointer_value = self.tape.get(self.pointer_pos).unwrap();
-        println!("pointer at index {} reading: {}", self.pointer_pos, *pointer_value);
+        let pointer_value: Alphabet = self.tape[self.pointer_pos];
+        match pointer_value {
+            Alphabet::One => println!("pointer at index {} reading: 1", self.pointer_pos),
+            Alphabet::Zero => println!("pointer at index {} reading: 0", self.pointer_pos)
+        }
 
         // get correct outcome
         let outcome: &Outcome;
-        if *pointer_value {
-            outcome = &self.states.get(self.current_state).unwrap().if_true;
-        } else {
-            outcome = &self.states.get(self.current_state).unwrap().if_false;
+        match pointer_value {
+            Alphabet::One => outcome = &self.states[self.current_state].if_one,
+            Alphabet::Zero => outcome = &self.states[self.current_state].if_zero,
         }
 
         // see outcome of state
@@ -70,7 +79,10 @@ impl TuringMachine {
             // execute action
             Outcome::Do(action) => {
                 // write to tape at pointer_pos
-                println!("writing: {}", action.write);
+                match action.write {
+                    Alphabet::One => println!("writing: 1"),
+                    Alphabet::Zero => println!("writing: 0")
+                }
                 self.tape[self.pointer_pos] = action.write;
                 // move pointer
                 match action.motion {
@@ -91,41 +103,38 @@ impl TuringMachine {
 
     fn print_tape(&self) {
         let mut tape: Vec<u8> = vec![];
-        for &element in self.tape.iter() {
-            if element {
-                tape.push(1);
-            } else {
-                tape.push(0);
+        for element in self.tape.iter() {
+            match element {
+                Alphabet::One => tape.push(1),
+                Alphabet::Zero => tape.push(0),
             }
         }
         println!{"tape: {:?}", tape};
     }
 }
 
-// TODO Implement Turing Machine
-// TODO Example Turing Machine test
+// Brought back Alphabet
+// TODO Make it work with more characters than just 0 and 1
 
 // TODO Busy Beaver Problem
 
-// TODO Bring back Alphabet
-// States should implement a `on(char: Alphabet) -> Outcome`
-
 pub fn run() {
+    type A = Alphabet;
     type D = Direction;
 
     // print three ones then halt.
-    let simple_test_machine = vec![
+    let simple_test_machine: Vec<State> = vec![
         State::new(
             Outcome::Halt,
-            Outcome::Do(Action::new(true, D::Right, 1))
+            Outcome::Do(Action::new(A::One, D::Right, 1))
         ),
         State::new(
             Outcome::Halt,
-            Outcome::Do(Action::new(true, D::Right, 2))
+            Outcome::Do(Action::new(A::One, D::Right, 2))
         ),
         State::new(
             Outcome::Halt,
-            Outcome::Do(Action::new(true, D::Left, 0))
+            Outcome::Do(Action::new(A::One, D::Left, 0))
         )
     ];
 
@@ -133,7 +142,7 @@ pub fn run() {
         is_running: true,
         states: simple_test_machine,
         current_state: 0,
-        tape: [false; TAPE_LEN],
+        tape: [A::Zero; TAPE_LEN],
         pointer_pos: 0
     };
 
