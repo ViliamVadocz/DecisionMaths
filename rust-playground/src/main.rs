@@ -1,5 +1,5 @@
-mod beaver;
+mod row_operations;
 
 fn main() {
-    beaver::run();
+    row_operations::run();
 }
