@@ -80,34 +80,41 @@ impl Matrix {
     }
 }
 
-impl fmt::Display for Matrix {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // get "length" of numbers to figure out adaptive print
-        let mut longest = 0;
-        for row in self.mat.iter() {
-            for &element in row.iter() {
-                let mut length = usize::from((element / 10.0).floor()) + DECIMAL_POINTS_IN_PRINT + 1;
-                // account for minus sign
-                if element < 0.0 {
-                    length += 1;
-                }
-                if length > longest {
-                    longest = length;
-                }
+fn printout_length(n: f32) -> usize {
+    // digits + point + decimal points
+    let mut length = (n.abs() as usize).to_string().chars().count() + 1 + DECIMAL_POINTS_IN_PRINT;
+    // account for minus sign
+    if n < 0.0 {
+        length += 1;
+    }
+    length
+}
+
+fn longest_print_out(mat: &Vec<Vec<f32>>) -> usize {
+    // get "length" of numbers to figure out adaptive print
+    let mut longest = 0;
+    for row in mat.iter() {
+        for &element in row.iter() {
+            let length = printout_length(element);
+            if length > longest {
+                longest = length;
             }
         }
+    }
+    longest
+}
+
+impl fmt::Display for Matrix {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let longest = longest_print_out(&self.mat);
         // print the matrix.
         let mut output: String = "".to_string();
         for row in self.mat.iter() {
             output += "|";
             for &element in row.iter() {
-                let mut length = usize::from((element / 10.0).floor()) + DECIMAL_POINTS_IN_PRINT + 1;
-                // account for minus sign.
-                if element < 0.0 {
-                    length += 1;
-                }
-                let padding = longest - length;
-                output += &format!("{0} {1:.dec$}", String::from(" ").repeat(padding), element, dec=DECIMAL_POINTS_IN_PRINT);
+                let num_spaces = longest - printout_length(element);
+                let padding = String::from(" ").repeat(num_spaces);
+                output += &format!("{} {:.dec$}", padding, element, dec=DECIMAL_POINTS_IN_PRINT);
             }
             output += " |\n";
         }
@@ -147,6 +154,8 @@ impl AugmentedMatrix {
 
     fn row_reduce(&mut self) {
         // rearrange rows so zeros are not on diagonal (bad algorithm).
+        // TODO Make sure it's possible
+        // TODO Check for type (independent, dependent, inconsistent)
         let mut all_good: bool;
         loop {
             all_good = true;
@@ -264,19 +273,7 @@ fn leading_term(row: &Vec<f32>) -> Option<f32> {
 impl fmt::Display for AugmentedMatrix {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // get "length" of numbers to figure out adaptive print
-        let mut longest = 0;
-        for row in self.mat.iter() {
-            for &element in row.iter() {
-                let mut length = usize::from((element / 10.0).floor()) + DECIMAL_POINTS_IN_PRINT + 1;
-                // account for minus sign
-                if element < 0.0 {
-                    length += 1;
-                }
-                if length > longest {
-                    longest = length;
-                }
-            }
-        }
+        let longest = longest_print_out(&self.mat);
         // print the matrix
         let mut output: String = "".to_string();
         for row in self.mat.iter() {
@@ -286,13 +283,9 @@ impl fmt::Display for AugmentedMatrix {
                 if i == self.div_col {
                     output += " :";
                 }
-                let mut length = usize::from((element / 10.0).floor()) + DECIMAL_POINTS_IN_PRINT + 1;
-                // account for minus sign
-                if element < 0.0 {
-                    length += 1;
-                }
-                let padding = longest - length;
-                output += &format!("{0} {1:.dec$}", String::from(" ").repeat(padding), element, dec=DECIMAL_POINTS_IN_PRINT);
+                let num_spaces = longest - printout_length(element);
+                let padding = String::from(" ").repeat(num_spaces);
+                output += &format!("{} {:.dec$}", padding, element, dec=DECIMAL_POINTS_IN_PRINT);
             }
             output += " |\n";
         }
@@ -309,24 +302,13 @@ pub fn run() {
             vec![0.0, 2.0, -2.0, 1.0]
         ]
     );
+    println!("matrix\n{}", matrix);
 
     let identity_4: Matrix = Matrix::identity(4);
-
     let mut augmented = matrix.augment_with(identity_4);
-    println!("{}", augmented);
+    println!("augment\n{}", augmented);
 
     augmented.row_reduce();
     let (new_identity, inverse_mat) = augmented.de_augment();
-
-    // println!("{}", new_identity);
-    println!("{}", inverse_mat);
-
-    // augmented.row_add(0, 1);
-    // println!("{}", augmented);
-
-    // augmented.row_switch(0, 1);
-    // println!("{}", augmented);
-
-    // augmented.row_mult(2, 3.0);
-    // println!("{}", augmented);
+    println!("inverse\n{}", inverse_mat);
 }
