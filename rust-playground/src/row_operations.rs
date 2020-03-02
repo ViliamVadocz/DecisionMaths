@@ -1,6 +1,8 @@
 #[warn(dead_code)]
 use std::fmt;
 
+const DECIMAL_POINTS_IN_PRINT: usize = 2;
+
 #[derive(Debug)]
 struct Matrix {
     row: usize,
@@ -80,11 +82,32 @@ impl Matrix {
 
 impl fmt::Display for Matrix {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // get "length" of numbers to figure out adaptive print
+        let mut longest = 0;
+        for row in self.mat.iter() {
+            for &element in row.iter() {
+                let mut length = usize::from((element / 10.0).floor()) + DECIMAL_POINTS_IN_PRINT + 1;
+                // account for minus sign
+                if element < 0.0 {
+                    length += 1;
+                }
+                if length > longest {
+                    longest = length;
+                }
+            }
+        }
+        // print the matrix.
         let mut output: String = "".to_string();
         for row in self.mat.iter() {
             output += "|";
             for &element in row.iter() {
-                output += &format!(" {}", element);
+                let mut length = usize::from((element / 10.0).floor()) + DECIMAL_POINTS_IN_PRINT + 1;
+                // account for minus sign.
+                if element < 0.0 {
+                    length += 1;
+                }
+                let padding = longest - length;
+                output += &format!("{0} {1:.dec$}", String::from(" ").repeat(padding), element, dec=DECIMAL_POINTS_IN_PRINT);
             }
             output += " |\n";
         }
@@ -240,14 +263,36 @@ fn leading_term(row: &Vec<f32>) -> Option<f32> {
 
 impl fmt::Display for AugmentedMatrix {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // get "length" of numbers to figure out adaptive print
+        let mut longest = 0;
+        for row in self.mat.iter() {
+            for &element in row.iter() {
+                let mut length = usize::from((element / 10.0).floor()) + DECIMAL_POINTS_IN_PRINT + 1;
+                // account for minus sign
+                if element < 0.0 {
+                    length += 1;
+                }
+                if length > longest {
+                    longest = length;
+                }
+            }
+        }
+        // print the matrix
         let mut output: String = "".to_string();
         for row in self.mat.iter() {
             output += "|";
             for (i, &element) in row.iter().enumerate() {
+                // column divider
                 if i == self.div_col {
                     output += " :";
                 }
-                output += &format!(" {}", element);
+                let mut length = usize::from((element / 10.0).floor()) + DECIMAL_POINTS_IN_PRINT + 1;
+                // account for minus sign
+                if element < 0.0 {
+                    length += 1;
+                }
+                let padding = longest - length;
+                output += &format!("{0} {1:.dec$}", String::from(" ").repeat(padding), element, dec=DECIMAL_POINTS_IN_PRINT);
             }
             output += " |\n";
         }
