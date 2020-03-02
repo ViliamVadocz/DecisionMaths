@@ -1,3 +1,4 @@
+#[warn(dead_code)]
 use std::fmt;
 
 #[derive(Debug)]
@@ -79,14 +80,15 @@ impl Matrix {
 
 impl fmt::Display for Matrix {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut output: String = "".to_string();
         for row in self.mat.iter() {
-            write!(f, "|");
+            output += "|";
             for &element in row.iter() {
-                write!(f, " {}", element);
+                output += &format!(" {}", element);
             }
-            write!(f, " |\n");
+            output += " |\n";
         }
-        write!(f, "")
+        write!(f, "{}\n", output)
     }
 }
 
@@ -110,7 +112,7 @@ impl AugmentedMatrix {
     fn row_switch(&mut self, row_a: usize, row_b: usize) {
         if row_a == row_b {
             // no need to switch
-            return
+            return;
         }
         let mut temp: f32;
         for i in 0..self.col {
@@ -119,21 +121,121 @@ impl AugmentedMatrix {
             self.mat[row_b][i] = temp;
         }
     }
+
+    fn row_reduce(&mut self) {
+        // rearrange rows so zeros are not on diagonal
+        // TODO
+
+        // bring nth term to one, and sub from others
+        for n in 0..self.div_col {
+            let n_term = self.mat[n][n];
+            self.row_mult(n, 1.0 / n_term);
+            println!("{}", self);
+
+            for i in 0..self.row {
+                if i == n {
+                    continue;
+                } else {
+                    let n_term_in_i_row = self.mat[i][n];
+                    if n_term_in_i_row == 0.0 {
+                        continue;
+                    }
+                    self.row_mult(n, -n_term_in_i_row);
+                    self.row_add(n, i);
+                    self.row_mult(n, -1.0 / n_term_in_i_row);
+                    println!("{}", self);
+                }
+            }
+        }
+    }
+
+    fn row_echelon_form(&mut self) -> bool {
+        for row in self.mat.iter() {
+            match leading_term(row) {
+                Some(term) => if term != 1.0 {return false;},
+                None => continue
+            }
+        }
+        return true;
+    }
+
+    fn reduced_row_echelon_form(&mut self) -> bool {
+        if !self.row_echelon_form() {
+            return false;
+        }
+
+        // get columns with ones in them.
+        let mut cols_with_ones: Vec<usize> = vec![];
+        for (i, row) in self.mat.iter().enumerate() {
+            match leading_term(row) {
+                Some(_term) => cols_with_ones.push(i),
+                None => continue
+            }
+        }
+        // check every column with a one to make sure it is the only non-zero term.
+        for i in cols_with_ones.into_iter() {
+            for row in self.mat.iter() {
+                let element = row[i];
+                if element == 0.0 {
+                    continue;
+                } else if element != 1.0 {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    fn de_augment(self) -> (Matrix, Matrix) {
+        let mut mat_a: Vec<Vec<f32>> = vec![];
+        let mut mat_b: Vec<Vec<f32>> = vec![];
+
+        for row in self.mat.into_iter() {
+            mat_a.push(row[0..self.div_col].to_vec());
+            mat_b.push(row[self.div_col..self.col].to_vec());
+        }
+
+        return (
+            Matrix {
+                row: self.row,
+                col: self.div_col,
+                mat: mat_a
+            },
+            Matrix {
+                row: self.row,
+                col: self.col - self.div_col,
+                mat: mat_b
+            }
+        )
+    }
+}
+
+fn leading_term(row: &Vec<f32>) -> Option<f32> {
+    // find first non-zero term.
+    for &element in row.iter() {
+        if element == 0.0 {
+            continue;
+        } else {
+            return Some(element);
+        }
+    }
+    None
 }
 
 impl fmt::Display for AugmentedMatrix {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut output: String = "".to_string();
         for row in self.mat.iter() {
-            write!(f, "|");
+            output += "|";
             for (i, &element) in row.iter().enumerate() {
                 if i == self.div_col {
-                    write!(f, " :");
+                    output += " :";
                 }
-                write!(f, " {}", element);
+                output += &format!(" {}", element);
             }
-            write!(f, " |\n");
+            output += " |\n";
         }
-        write!(f, "")
+        write!(f, "{}\n", output)
     }
 }
 
@@ -154,12 +256,24 @@ pub fn run() {
     let mut augmented = matrix.augment_with(identity_3);
     println!("{}", augmented);
 
-    augmented.row_add(0, 1);
+    augmented.row_reduce();
     println!("{}", augmented);
 
-    augmented.row_switch(0, 1);
-    println!("{}", augmented);
+    let (new_identity, inverse_mat) = augmented.de_augment();
 
-    augmented.row_mult(2, 3.0);
-    println!("{}", augmented);
+    println!("{}", new_identity);
+    println!("{}", inverse_mat);
+
+    // augmented.row_add(0, 1);
+    // println!("{}", augmented);
+
+    // augmented.row_switch(0, 1);
+    // println!("{}", augmented);
+
+    // augmented.row_mult(2, 3.0);
+    // println!("{}", augmented);
 }
+
+// TODO
+// Solution checking
+// 
