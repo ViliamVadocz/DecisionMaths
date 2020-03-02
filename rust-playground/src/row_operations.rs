@@ -123,14 +123,27 @@ impl AugmentedMatrix {
     }
 
     fn row_reduce(&mut self) {
-        // rearrange rows so zeros are not on diagonal
-        // TODO
+        // rearrange rows so zeros are not on diagonal (bad algorithm).
+        let mut all_good: bool;
+        loop {
+            all_good = true;
+            for n in 0..self.div_col {
+                if self.mat[n][n] == 0.0 {
+                    all_good = false;
+                    self.row_switch(n, (n+1) % self.row);
+                    println!("switch\n{}", self);
+                }
+            }
+            if all_good {
+                break;
+            }
+        }
 
         // bring nth term to one, and sub from others
         for n in 0..self.div_col {
             let n_term = self.mat[n][n];
             self.row_mult(n, 1.0 / n_term);
-            println!("{}", self);
+            println!("mult\n{}", self);
 
             for i in 0..self.row {
                 if i == n {
@@ -143,7 +156,7 @@ impl AugmentedMatrix {
                     self.row_mult(n, -n_term_in_i_row);
                     self.row_add(n, i);
                     self.row_mult(n, -1.0 / n_term_in_i_row);
-                    println!("{}", self);
+                    println!("add\n{}", self);
                 }
             }
         }
@@ -242,9 +255,9 @@ impl fmt::Display for AugmentedMatrix {
 pub fn run() {
     let matrix: Matrix = Matrix::from(
         vec![
-            vec![2.0, 3.0, 1.0],
-            vec![3.0, 1.0, 2.0],
-            vec![1.0, 2.0, 3.0]
+            vec![5.0, 0.0, 1.0],
+            vec![3.0, 0.0, 0.0],
+            vec![0.0, 3.0, 0.0]
         ]
     );
 
@@ -261,7 +274,7 @@ pub fn run() {
 
     let (new_identity, inverse_mat) = augmented.de_augment();
 
-    println!("{}", new_identity);
+    // println!("{}", new_identity);
     println!("{}", inverse_mat);
 
     // augmented.row_add(0, 1);
@@ -273,7 +286,3 @@ pub fn run() {
     // augmented.row_mult(2, 3.0);
     // println!("{}", augmented);
 }
-
-// TODO
-// Solution checking
-// 
