@@ -142,9 +142,12 @@ impl AugmentedMatrix {
         // bring nth term to one, and sub from others
         for n in 0..self.div_col {
             let n_term = self.mat[n][n];
-            self.row_mult(n, 1.0 / n_term);
-            println!("mult\n{}", self);
-
+            // make n_term be equal to one
+            if n_term != 1.0 {
+                self.row_mult(n, 1.0 / n_term);
+                println!("mult\n{}", self);
+            }
+            // make every other term in column a zero
             for i in 0..self.row {
                 if i == n {
                     continue;
@@ -156,7 +159,7 @@ impl AugmentedMatrix {
                     self.row_mult(n, -n_term_in_i_row);
                     self.row_add(n, i);
                     self.row_mult(n, -1.0 / n_term_in_i_row);
-                    println!("add\n{}", self);
+                    println!("add\n{}", self); // multiple steps, but it's clear
                 }
             }
         }
@@ -255,23 +258,19 @@ impl fmt::Display for AugmentedMatrix {
 pub fn run() {
     let matrix: Matrix = Matrix::from(
         vec![
-            vec![5.0, 0.0, 1.0],
-            vec![3.0, 0.0, 0.0],
-            vec![0.0, 3.0, 0.0]
+            vec![-3.0, 5.0, 1.0, 2.0],
+            vec![2.0, -1.0, 0.0, 1.0],
+            vec![1.0, 6.0, 2.0, -1.0],
+            vec![0.0, 2.0, -2.0, 1.0]
         ]
     );
 
-    let identity_3: Matrix = Matrix::identity(3);
+    let identity_4: Matrix = Matrix::identity(4);
 
-    println!("{}", matrix);
-    println!("{}", identity_3);
-
-    let mut augmented = matrix.augment_with(identity_3);
+    let mut augmented = matrix.augment_with(identity_4);
     println!("{}", augmented);
 
     augmented.row_reduce();
-    println!("{}", augmented);
-
     let (new_identity, inverse_mat) = augmented.de_augment();
 
     // println!("{}", new_identity);
