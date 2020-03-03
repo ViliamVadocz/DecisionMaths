@@ -20,10 +20,10 @@ struct AugmentedMatrix {
 
 impl Matrix {
     fn from(mat: Vec<Vec<f32>>) -> Matrix {
-        let col: usize = mat.len();
-        let row: usize = mat[0].len();
+        let col: usize = mat[0].len();
+        let row: usize = mat.len();
         for test_row in mat.iter() {
-            if test_row.len() != row {
+            if test_row.len() != col {
                 panic!("Row lengths don't match.");
             }
         }
@@ -81,13 +81,7 @@ impl Matrix {
 }
 
 fn printout_length(n: f32) -> usize {
-    // digits + point + decimal points
-    let mut length = (n.abs() as usize).to_string().chars().count() + 1 + DECIMAL_POINTS_IN_PRINT;
-    // account for minus sign
-    if n < 0.0 {
-        length += 1;
-    }
-    length
+    format!("{:.dec$}", n, dec=DECIMAL_POINTS_IN_PRINT).chars().count()
 }
 
 fn longest_print_out(mat: &Vec<Vec<f32>>) -> usize {
@@ -310,5 +304,30 @@ pub fn run() {
 
     augmented.row_reduce();
     let (new_identity, inverse_mat) = augmented.de_augment();
-    println!("inverse\n{}", inverse_mat);
+    println!("output\n{}", inverse_mat);
+
+    // let matrix: Matrix = Matrix::from(
+    //     vec![
+    //         vec![6.0, 0.0, 0.0, -1.0],
+    //         vec![6.0, 0.0, -1.0, 0.0],
+    //         vec![6.0, 2.0, -1.0, -2.0],
+    //         vec![0.0, 0.0, 0.0, 1.0]
+    //     ]
+    // );
+    // println!("matrix\n{}", matrix);
+
+    // let zero_col_vec: Matrix = Matrix::from(
+    //     vec![
+    //         vec![0.0],
+    //         vec![0.0],
+    //         vec![0.0],
+    //         vec![6.0]
+    //     ]
+    // );
+    // let mut augmented = matrix.augment_with(zero_col_vec);
+    // println!("augment\n{}", augmented);
+
+    // augmented.row_reduce();
+    // let (new_identity, inverse_mat) = augmented.de_augment();
+    // println!("output\n{}", inverse_mat);
 }
