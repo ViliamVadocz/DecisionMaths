@@ -157,7 +157,7 @@ impl AugmentedMatrix {
                 if self.mat[n][n] == 0.0 {
                     all_good = false;
                     self.row_switch(n, (n+1) % self.row);
-                    println!("switch\n{}", self);
+                    println!("switch R{} and R{}\n{}", n, (n+1) % self.row, self);
                 }
             }
             if all_good {
@@ -171,7 +171,7 @@ impl AugmentedMatrix {
             // make n_term be equal to one
             if n_term != 1.0 {
                 self.row_mult(n, 1.0 / n_term);
-                println!("mult\n{}", self);
+                println!("mult R{} by {}\n{}", n, 1.0 / n_term, self);
             }
             // make every other term in column a zero
             for i in 0..self.row {
@@ -185,7 +185,7 @@ impl AugmentedMatrix {
                     self.row_mult(n, -n_term_in_i_row);
                     self.row_add(n, i);
                     self.row_mult(n, -1.0 / n_term_in_i_row);
-                    println!("add\n{}", self); // multiple steps, but it's clear
+                    println!("add {} of R{} to R{}\n{}", -n_term_in_i_row, n, i, self); // multiple steps, but it's clear
                 }
             }
         }
