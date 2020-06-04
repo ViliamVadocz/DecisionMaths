@@ -1,0 +1,22 @@
+# define bools
+true := 1 > 0
+false := !true
+
+# check that a number is prime by testing divisibility
+check_primality := (number, test) {
+    # exit condition
+    test = 1 -> true
+    # number is divisible, it is not prime
+    number % test = 0 -> false
+    # test divisibility by lower numbers
+    @(number, test - 1)
+}
+
+# call check_primality with starting "test"
+is_prime := (n) {
+    n > 0! # assert that n is a positive integer
+    n = 1 -> false
+    check_primality(n, n / 2)
+}
+
+is_prime(7789)

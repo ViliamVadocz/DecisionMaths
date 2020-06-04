@@ -1,0 +1,38 @@
+# problem statement:
+# given an input of elements, return the index of all that appear more than once
+
+# define bools
+true := 1 > 0
+false := !true
+
+# tests whether an element is in a list
+in := (list, elem) {
+    (i) {
+        i = |list| -> false
+        list[i] = elem -> true
+        @(i + 1)
+    } (0)
+}
+
+collisions := (input) {
+    # get all elements that appear more than once
+    double := (i, seen, double) {
+        # exit when we reached the end of the input list
+        i = |input| -> double
+        # get the elem at the current index
+        elem := input[i]
+        # update seen and double
+        {seen, double} := {
+            !in(seen, elem) -> {double, seen :: [elem]}
+            !in(double, elem) -> {double :: [elem], seen}
+            {seen, double}
+        }
+        @(i + 1, seen, double)
+    } (0, [], [])
+    # get indices of collisions
+    (i, output) {
+        i = |input| -> output
+        in(double, input[i]) -> @(i + 1, output :: [i])
+        @(i + 1, output)
+    } (0, [])
+}

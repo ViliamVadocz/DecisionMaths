@@ -1,0 +1,16 @@
+# recursive factorial of x
+factorial := (x,) {
+    x < 2 -> 1.0
+    x.0 * @(x - 1,)
+}
+
+# calculate euler's constant
+precision = 100
+e := (sum, i) {
+    i >= precision -> sum
+    term := 1.0 / factorial(i)
+    @(sum + term, i + 1)
+} (1.0, 1)
+
+# return e
+e
