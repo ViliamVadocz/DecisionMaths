@@ -1,0 +1,22 @@
+print := (str) {$printf(str :: "\n")}
+
+last_digit := (x) {"0123456789"[x % 10]}
+
+int_to_str := (x) {
+    str := (n, str) {
+        new_n := n / 10
+        new_n = n -> {|str| > 0 -> str; "0"}
+        char := last_digit(n)
+        @(new_n, [char] :: str)
+    } ({x < 0 -> -x; x}, [])
+    x < 0 -> "-" :: str
+    str
+}
+
+list_to_str := (list) {
+    |list| = 0 -> "[]"
+    (i, str) {
+        i = |list| -> str :: "]"
+        @(i + 1, str :: ", " :: int_to_str(list[i]))
+    } (1, "[" :: int_to_str(list[0]))
+}
