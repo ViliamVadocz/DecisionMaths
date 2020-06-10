@@ -1,0 +1,51 @@
+check_sorted := (list) {
+    (i) {
+        i > |list| - 2 || list[i] <= list[i + 1] && @(i + 1)
+    } (0)
+}
+
+# credit to Hytak
+quicksort := (list) {
+    |list| = 1 || |list| = 0 -> list
+    {left, right} := (left, right, i) {
+        i >= |list| -> {left, right}
+        list[i] < list[0] -> @(left :: [list[i]], right, i + 1)
+        @(left, right :: [list[i]], i + 1)
+    } ([], [], 1)
+    @(left) :: [list[0]] :: @(right)
+}
+
+zeros := (n) {
+    (list) {
+        |list| >= n -> list
+        @(list :: [0])
+    } ([])
+}
+
+counting_sort := (list) {
+    |list| = 1 || |list| = 0 -> list
+    {min, max} := (i, min, max) {
+        i = |list| -> {min, max}
+        elem := list[i]
+        @(i + 1, {elem < min -> elem; min}, {elem > max -> elem; max})
+    } (1, list[0], list[0])
+    counts := zeros(max - min + 1)
+    counts := (i, counts) {
+        i = |list| -> counts
+        counts[list[i] - min] += 1
+        @(i + 1, counts)
+    } (0, counts)
+    (i, sorted_list) {
+        |sorted_list| = |list| -> sorted_list
+        counts[i] = 0 -> @(i + 1, sorted_list)
+        sorted_list := (sorted_list, n) {
+            n = 0 -> sorted_list
+            @(sorted_list :: [i + min], n - 1)
+        } (sorted_list, counts[i])
+        @(i + 1, sorted_list)
+    } (0, [])
+}
+
+example := [-25, 23, 33, 54, 92, 0, -23, -1, 4, 34, 12, 23, 6, 76, 23, 43, 54, 6, 67, -43, 65, -64, -2, 76, -5, -23, -67, 43, 32, 12, 34, 64, 23, 13, 53, 4, 65, 77, 56, 43, 34, 54, 65, 68, 86, 43, 45, 65, 78, 87, 6, 34, 2, 76, 8,8, 85, 34, 76 ,7]
+# quicksort(example)
+counting_sort(example)

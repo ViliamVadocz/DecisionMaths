@@ -45,7 +45,8 @@ greater := (a, b) {a > b -> a; b}
 min := (list) {
     (i, min) {
         i = |list| -> min
-        @(i + 1, smaller(min, list[i]))
+        elem := list[i]
+        @(i + 1, {elem < min -> elem; min})
     } (1, list[0])
 }
 
@@ -53,7 +54,8 @@ min := (list) {
 max := (list) {
     (i, max) {
         i = |list| -> max
-        @(i + 1, greater(max, list[i]))
+        elem := list[i]
+        @(i + 1, {elem > max -> elem; max})
     } (1, list[0])
 }
 
