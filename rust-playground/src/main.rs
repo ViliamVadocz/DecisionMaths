@@ -1,5 +1,5 @@
-mod row_operations;
+mod game_of_life;
 
 fn main() {
-    row_operations::run();
+    game_of_life::run();
 }
