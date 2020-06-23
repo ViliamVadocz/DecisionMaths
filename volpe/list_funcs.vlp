@@ -133,4 +133,12 @@ replace := (list, to_replace, with_what) {
     } ([])
 }
 
+map := (list, func) {
+    (new_list) {
+        i := |new_list|
+        i = |list| -> new_list
+        @(new_list :: [func(list[i])])
+    } ([])
+}
+
 "ok"
