@@ -113,6 +113,13 @@ parse_flt := (str) {
     {negative -> -abs; abs}
 }
 
+### parsing bools ###
+
+# "true" / "false"
+parse_bool := (str) {
+    str[0] = 't'
+}
+
 ### parse list ###
 
 parse_list_flt := (str) {
@@ -133,23 +140,14 @@ parse_list_int := (str) {
     } (1, [])
 }
 
-#!
-parse_list_char := (str) {
-    |str| < 3 -> ""
+parse_list_bool := (str) {
+    |str| < 3 -> []
     (i, out) {
         next := index(slice(str, i, |str|), ',') + i
-        next < i -> out :: [str[|str|-3]]
-        @(next + 1, out :: [str[next-2]])
-    } (1, "")
+        next < i -> out :: [parse_bool(slice(str, i, |str| - 1))]
+        @(next + 1, out :: [parse_bool(slice(str, i, next))])
+    } (1, [])
 }
-!#
-
-# parse_list(str) {
-#     in(str, '.') -> parse_list_flt(str)
-#     in(str, '\'') -> parse_list_char(str)
-#     parse_list_int(str)
-#     # parse_list_list???
-# }
 
 ### pre-parsing ###
 
@@ -162,4 +160,15 @@ remove_whitespace := (str) {
     } (0, [])
 }
 
-parse_list_flt(remove_whitespace("[134.23, 34.0120, 42.23, -94.3, 2.001, -0.68]"))
+### example ###
+
+parsed := {
+    "John Doe",
+    parse_list_bool(remove_whitespace("[false, true, true, false, false, true]")),
+    parse_list_flt(remove_whitespace("[134.23, 34.0120, 42.23]")),
+    parse_list_int(remove_whitespace("[0, 1, 2, -4, 5, 8, -2, 10]")),
+}
+
+# {name, conds, pos, nums} := parsed
+
+parsed
