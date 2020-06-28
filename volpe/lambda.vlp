@@ -1,0 +1,49 @@
+_0 := (f) { (x) {x} }
+_1 := (f) { (x) {f(x)} }
+_2 := (f) { (x) {f(f(x))} }
+_3 := (f) { (x) {f(f(f(x)))} }
+_4 := (f) { (x) {f(f(f(f(x))))} }
+_5 := (f) { (x) {f(f(f(f(f(x)))))} }
+_6 := (f) { (x) {f(f(f(f(f(f(x))))))} }
+_7 := (f) { (x) {f(f(f(f(f(f(f(x)))))))} }
+_8 := (f) { (x) {f(f(f(f(f(f(f(f(x))))))))} }
+_9 := (f) { (x) {f(f(f(f(f(f(f(f(f(x)))))))))} }
+# ...
+
+inc := (i) {i + 1}
+
+# _0(inc)(0) = 0!
+# _1(inc)(0) = 1!
+# _2(inc)(0) = 2!
+# _3(inc)(0) = 3!
+
+# bools
+true := (a) { (b) {a} }
+false := (a) { (b) {b} } # same as _0 !
+
+square := (m) {_2(m)}
+square(_7)(inc)(0) = 49! # wow! seven times apply two times apply increment on 0
+
+# automate church numerals with repeated function application through recursion
+church_encode := (n) {
+    (f) { (x) {
+        (i, x) {
+            i >= n -> x
+            @(i + 1, f(x))
+        } (0, x)
+    } }
+}
+_10 := church_encode(10)
+square(_10)(inc)(0) = 100!
+
+# adding
+add := (f) {(g) {(x) {(i) {f(x)(g(x)(i))}}}}
+add(_7)(_4)(inc)(0) = 11!
+
+# less verbose add
+add := (f, g) {(x, i) {f(x, g(x, i))}}
+
+_11 := add(_7, _4)
+_8 := add(_4, _4)
+
+add(_11, _8)(inc, 0)
