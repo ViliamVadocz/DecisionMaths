@@ -1,0 +1,74 @@
+# Fake printing
+output := {text: "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", end: 0}
+print := (output, char) {
+    output.text[output.end] := char
+    output.end += 1
+    output
+}
+
+# Stack-like object
+stack := {arr: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], top: 0}
+push := (stack, elem) {
+    stack.arr[stack.top] := elem
+    stack.top += 1
+    stack
+}
+pop := (stack) {
+    stack.top -= 1
+    elem := stack.arr[stack.top]
+    stack.arr[stack.top] := 0
+    stack, elem
+}
+
+code := "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
+tape := "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+
+execute := (code, code_ptr, tape, tape_ptr, checkpoints, output) {
+    # End of code
+    code_ptr = |code| -> output
+
+    symbol := code[code_ptr]
+    tape, tape_ptr, code_ptr, checkpoints, output := {
+        symbol = '+' -> {
+            tape[tape_ptr] += '\x01'
+            tape, tape_ptr, code_ptr, checkpoints, output
+        }
+        symbol = '-' -> {
+            tape[tape_ptr] -= '\x01'
+            tape, tape_ptr, code_ptr, checkpoints, output
+        }
+        symbol = '>' -> tape, tape_ptr + 1, code_ptr, checkpoints, output
+        symbol = '<' -> tape, tape_ptr - 1, code_ptr, checkpoints, output
+        symbol = '.' -> tape, tape_ptr, code_ptr, checkpoints, print(output, tape[tape_ptr])
+        symbol = '[' -> {
+            # Skip until corresponding `]`
+            tape[tape_ptr] = '\x00' -> {
+                code_ptr := (opens, closes, code_ptr) {
+                    opens = closes -> code_ptr
+                    code[code_ptr] = '[' -> @(opens + 1, closes, code_ptr + 1)
+                    code[code_ptr] = ']' -> @(opens, closes + 1, code_ptr + 1)
+                    @(opens, closes, code_ptr + 1)
+                } (1, 0, code_ptr)
+                tape, tape_ptr, code_ptr, checkpoints, output
+            }
+            # Add checkpoint
+            checkpoints := push(checkpoints, code_ptr)
+            tape, tape_ptr, code_ptr, checkpoints, output
+        }
+        symbol = ']' -> {
+            # Loop back to corresponding `]`
+            tape[tape_ptr] != '\x00' -> {
+                checkpoints, code_ptr := pop(checkpoints)
+                tape, tape_ptr, code_ptr - 1, checkpoints, output
+            }
+            # Remove checkpoint
+            checkpoints, _ := pop(checkpoints)
+            tape, tape_ptr, code_ptr, checkpoints, output
+        }
+        # Not a recognised command
+        tape, tape_ptr, code_ptr, checkpoints, output
+    }
+    @(code, code_ptr + 1, tape, tape_ptr, checkpoints, output)
+}
+
+execute(code, 0, tape, 0, stack, output).text
