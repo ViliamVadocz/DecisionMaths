@@ -1,0 +1,39 @@
+# imports
+complex, eval_c := $complex
+stdout, print := $io
+(   max_count: max_count,
+    total_cols: total_cols,
+    total_rows: total_rows,
+    start_re: start_re,
+    end_re: end_re,
+    start_im: start_im,
+    end_im: end_im    ) := $params
+
+step_re := (end_re - start_re) / total_cols.0
+step_im := (end_im - start_im) / total_rows.0
+
+get_symbol := (count_reached) {
+    count_reached > max_count -> '0'
+    count_reached > max_count / 5 -> 'x'
+    count_reached > max_count / 10 -> '*'
+    count_reached > max_count / 25 -> '.'
+    ' '
+}
+
+mandelbrot := (image) {
+    (row, image) {
+        row >= total_rows -> image
+        image := (col, image) {
+            col >= total_cols -> image
+            # get the complex number at this coordinate
+            c := complex(start_re + step_re * col.0, start_im + step_im * row.0)
+            count_reached := eval_c(c)
+            symbol := get_symbol(count_reached)
+            @(col + 1, print(image, symbol))
+        } (0, image)
+        # add newline at end of each row
+        @(row + 1, print(image, '\n'))
+    } (0, image)
+}
+
+mandelbrot(print(stdout, '\n')).text

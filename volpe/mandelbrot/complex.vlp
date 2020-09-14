@@ -1,0 +1,30 @@
+complex := (re, im) {
+    complex := @
+    add := (other) {
+        # (a + bi) + (x + yi) = (a + x) + i(b + y)
+        complex(re + other.re, im + other.im)
+    }
+    mult := (other) {
+        # (a + bi)(x + yi) = ax + ayi + bxi + byii
+        # = (ax - by) + i(ay + bx)
+        complex(re * other.re - im * other.im, re * other.im + im * other.re)
+    }
+    {
+        re: re,
+        im: im,
+        add: add,
+        mult: mult,
+        norm_squared: re * re + im * im
+    }
+}
+
+# finds for how many repetitions z remains bounded
+max_count := $params.max_count
+eval_c := (c) {
+    (z, count) {
+        z.norm_squared > 4.0 || count > max_count -> count
+        @(z.mult(z).add(c), count + 1)
+    } (complex(0.0, 0.0), 0)
+}
+
+complex, eval_c

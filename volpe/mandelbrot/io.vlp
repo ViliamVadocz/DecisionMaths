@@ -1,0 +1,16 @@
+# fake stdout
+stdout := {
+    text: ['\x00'; 2048],
+    end: 0
+}
+
+print := (stdout, char) {
+    # stop printing when we reached end
+    stdout.end = |stdout.text| -> stdout
+
+    stdout.text[stdout.end] := char
+    stdout.end += 1
+    stdout
+}
+
+stdout, print
