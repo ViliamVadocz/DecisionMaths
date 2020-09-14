@@ -1,0 +1,46 @@
+rows := 30
+cols := 60
+
+print := (output, char, x, y) {
+    !(0 <= x < cols && 0 <= y < rows) -> output
+    output[(cols + 1) * y + x + 1] := char
+    output
+}
+
+gen_grid := () {
+    # add newlines manually
+    out := (i, out) {
+        i = rows -> out
+        out[i * (cols + 1)] := '\n'
+        @(i + 1, out)
+    } (0, [' '; 1900])
+    # x axis
+    out := (x, out) { 
+        x = cols -> out
+        out := print(out, '-', x, rows / 2)
+        @(x + 1, out)
+    } (1, out)
+    # y axis
+    out := (y, out) { 
+        y = rows -> out
+        out := print(out, '|', cols / 2, y)
+        @(y + 1, out)
+    } (0, out)
+    # origin
+    print(out, '+', cols / 2, rows / 2)
+}
+
+graph := (func, start, end, y_scale) {
+    out := gen_grid()
+    x_step := (end - start) / cols.0
+    (x, out) {
+        x = cols -> out
+        y := rows / 2 - ~(func(x_step * (x - cols / 2).0) * y_scale - 0.5)
+        out := print(out, '*', x, y)
+        @(x + 1, out)
+    } (0, out)
+}
+
+f := (x) {(x + 3.0) * (x - 0.5) * (x - 2.0)}
+
+graph(f, -4.5, 4.5, 1.0)
