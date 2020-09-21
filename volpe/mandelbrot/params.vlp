@@ -1,20 +1,23 @@
 max_count := 100
 
-total_rows := 30
-total_cols := 65
+width := 1920
+height := 1080
+# width * height * 3
+image := [0; 6220800]
 
-start_re := -(2.1)
+start_re := -2.1
 end_re := 0.5
 
 start_im := 1.2
-end_im := -(1.2)
+end_im := -1.2
 
-{
+(
     max_count: max_count,
-    total_cols: total_cols,
-    total_rows: total_rows,
+    width: width,
+    height: height,
+    image: image,
     start_re: start_re,
     end_re: end_re,
     start_im: start_im,
     end_im: end_im
-}
+)

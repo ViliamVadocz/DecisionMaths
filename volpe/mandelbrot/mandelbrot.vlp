@@ -1,39 +1,48 @@
 # imports
-complex, eval_c := $complex
-stdout, print := $io
 (   max_count: max_count,
-    total_cols: total_cols,
-    total_rows: total_rows,
+    height: height,
+    width: width,
+    image: image,
     start_re: start_re,
     end_re: end_re,
     start_im: start_im,
     end_im: end_im    ) := $params
+complex, eval_c := $complex
+make_image := $ppm_image
 
-step_re := (end_re - start_re) / total_cols.0
-step_im := (end_im - start_im) / total_rows.0
+step_re := (end_re - start_re) / width.0
+step_im := (end_im - start_im) / height.0
 
-get_symbol := (count_reached) {
-    count_reached > max_count -> '0'
-    count_reached > max_count / 5 -> 'x'
-    count_reached > max_count / 10 -> '*'
-    count_reached > max_count / 25 -> '.'
-    ' '
+rgb := (r, g, b) {r: r, g: g, b: b}
+get_colour := (count_reached) {
+    # inside is black
+    count_reached > max_count -> rgb(0, 0, 0)
+    # outside is bright nearvy
+    brightness := count_reached * 255 / max_count
+    rgb(0, brightness, brightness / 2) 
 }
 
-mandelbrot := (image) {
-    (row, image) {
-        row >= total_rows -> image
+mandelbrot := () {
+    pixels := (row, image) {
+        row >= width -> image
         image := (col, image) {
-            col >= total_cols -> image
+            col >= height -> image
             # get the complex number at this coordinate
             c := complex(start_re + step_re * col.0, start_im + step_im * row.0)
             count_reached := eval_c(c)
-            symbol := get_symbol(count_reached)
-            @(col + 1, print(image, symbol))
+            # colour that pixel
+            colour := get_colour(count_reached)
+            pixel := 3 * (row * width + col)
+            image[pixel] := colour.r
+            image[pixel + 1] := colour.g
+            image[pixel + 2] := colour.b
+            @(col + 1, image)
         } (0, image)
         # add newline at end of each row
         @(row + 1, print(image, '\n'))
     } (0, image)
+
+    make_image("mandelbrot.ppm\0", pixels, width, height)
 }
 
-mandelbrot(print(stdout, '\n')).text
+mandelbrot()
