@@ -19,8 +19,7 @@ complex := (re, im) {
 }
 
 # finds for how many repetitions z remains bounded
-max_count := $params.max_count
-eval_c := (c) {
+eval_c := (c, max_count) {
     (z, count) {
         z.norm_squared > 4.0 || count > max_count -> count
         @(z.mult(z).add(c), count + 1)

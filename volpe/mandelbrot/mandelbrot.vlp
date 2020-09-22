@@ -1,48 +1,78 @@
-# imports
-(   max_count: max_count,
-    height: height,
-    width: width,
-    image: image,
-    start_re: start_re,
-    end_re: end_re,
-    start_im: start_im,
-    end_im: end_im    ) := $params
+# importing file operations
+open := $$MinGW\include\stdio\fopen
+close := $$MinGW\include\stdio\fclose
+write_char := $$MinGW\include\stdio\fputc
+write_str := $$MinGW\include\stdio\fputs
+# local Volpe imports
 complex, eval_c := $complex
-make_image := $ppm_image
+int_to_str := $int_to_str
 
-step_re := (end_re - start_re) / width.0
-step_im := (end_im - start_im) / height.0
+###### PARAMS ######
+WIDTH := 1920      #
+HEIGHT := 1080     #
+                   #
+START_IM := -1.125 #
+END_IM := 1.125    #
+                   #
+START_RE := -2.5   #
+END_RE := 1.5      #
+                   #
+MAX_COUNT := 300   #
+####################
 
-rgb := (r, g, b) {r: r, g: g, b: b}
+STEP_IM := (END_IM - START_IM) / HEIGHT.0
+STEP_RE := (END_RE - START_RE) / WIDTH.0
+
+
+min := (a, b) {a < b -> a; b}
+max := (a, b) {a > b -> a; b}
+rgb := (r, g, b) {
+    r: max(0, min(r, 255)),
+    g: max(0, min(g, 255)),
+    b: max(0, min(b, 255))
+}
 get_colour := (count_reached) {
     # inside is black
-    count_reached > max_count -> rgb(0, 0, 0)
+    count_reached > MAX_COUNT -> rgb(0, 0, 0)
     # outside is bright nearvy
-    brightness := count_reached * 255 / max_count
-    rgb(0, brightness, brightness / 2) 
+    brightness := count_reached * 500 / MAX_COUNT
+    rgb(brightness, 0, 0) 
 }
 
-mandelbrot := () {
-    pixels := (row, image) {
-        row >= width -> image
-        image := (col, image) {
-            col >= height -> image
-            # get the complex number at this coordinate
-            c := complex(start_re + step_re * col.0, start_im + step_im * row.0)
-            count_reached := eval_c(c)
-            # colour that pixel
-            colour := get_colour(count_reached)
-            pixel := 3 * (row * width + col)
-            image[pixel] := colour.r
-            image[pixel + 1] := colour.g
-            image[pixel + 2] := colour.b
-            @(col + 1, image)
-        } (0, image)
-        # add newline at end of each row
-        @(row + 1, print(image, '\n'))
-    } (0, image)
 
-    make_image("mandelbrot.ppm\0", pixels, width, height)
+mandelbrot := (filename) {
+    file := open(filename, &"wb\0")
+
+    # header
+    _ := write_str(&"P6\0", file)               # P6
+    _ := write_char(32, file)                   # SPACE
+    _ := write_str(&int_to_str(WIDTH), file)    # width
+    _ := write_char(32, file)                   # SPACE
+    _ := write_str(&int_to_str(HEIGHT), file)   # height
+    _ := write_char(32, file)                   # SPACE
+    _ := write_str(&int_to_str(255), file)      # Maxval
+    _ := write_char(32, file)                   # SPACE
+    
+    _ := (x, y, file) {
+        y = HEIGHT -> {}
+        x = WIDTH -> @(0, y + 1, file)
+
+        # get the complex number at this coordinate
+        c := complex(START_RE + STEP_RE * x.0, START_IM + STEP_IM * y.0)
+        count_reached := eval_c(c, MAX_COUNT)
+
+        # colour that pixel
+        colour := get_colour(count_reached)
+        _ := write_char(colour.r, file)
+        _ := write_char(colour.g, file)
+        _ := write_char(colour.b, file)
+
+        @(x + 1, y, file)
+    } (0, 0, file)
+
+    _ := close(file)
 }
 
-mandelbrot()
+_ := mandelbrot(&"mandelbrot.ppm\0")
+
+"done"
