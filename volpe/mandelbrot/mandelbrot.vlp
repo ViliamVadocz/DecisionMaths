@@ -1,78 +1,33 @@
-# importing file operations
-open := $$MinGW\include\stdio\fopen
-close := $$MinGW\include\stdio\fclose
-write_char := $$MinGW\include\stdio\fputc
-write_str := $$MinGW\include\stdio\fputs
 # local Volpe imports
+ppm_image := $ppm_image\ppm_image
 complex, eval_c := $complex
-int_to_str := $int_to_str
 
 ###### PARAMS ######
-WIDTH := 1920      #
-HEIGHT := 1080     #
-                   #
-START_IM := -1.125 #
-END_IM := 1.125    #
-                   #
-START_RE := -2.5   #
-END_RE := 1.5      #
-                   #
-MAX_COUNT := 300   #
+WIDTH := 1920
+HEIGHT := 1080
+
+START_IM := -1.125
+END_IM := 1.125
+
+START_RE := -2.5
+END_RE := 1.5
+
+MAX_COUNT := 300
+BRIGHTNESS := 500
 ####################
 
 STEP_IM := (END_IM - START_IM) / HEIGHT.0
 STEP_RE := (END_RE - START_RE) / WIDTH.0
 
+mandelbrot := (x, y) {
+    c := complex(START_RE + STEP_RE * x.0, START_IM + STEP_IM * y.0)
+    count_reached := eval_c(c, MAX_COUNT)
 
-min := (a, b) {a < b -> a; b}
-max := (a, b) {a > b -> a; b}
-rgb := (r, g, b) {
-    r: max(0, min(r, 255)),
-    g: max(0, min(g, 255)),
-    b: max(0, min(b, 255))
-}
-get_colour := (count_reached) {
     # inside is black
-    count_reached > MAX_COUNT -> rgb(0, 0, 0)
-    # outside is bright nearvy
-    brightness := count_reached * 500 / MAX_COUNT
-    rgb(0, brightness, brightness / 3) 
+    count_reached > MAX_COUNT -> (r: 0, g: 0, b: 0)
+    # outside is brighter nearby
+    val := count_reached * BRIGHTNESS / MAX_COUNT
+    (r: 0, g: val, b: val / 3)
 }
 
-
-mandelbrot := (filename) {
-    file := open(filename, &"wb\0")
-
-    # header
-    _ := write_str(&"P6\0", file)               # P6
-    _ := write_char(32, file)                   # SPACE
-    _ := write_str(&int_to_str(WIDTH), file)    # width
-    _ := write_char(32, file)                   # SPACE
-    _ := write_str(&int_to_str(HEIGHT), file)   # height
-    _ := write_char(32, file)                   # SPACE
-    _ := write_str(&int_to_str(255), file)      # Maxval
-    _ := write_char(32, file)                   # SPACE
-    
-    _ := (x, y, file) {
-        y = HEIGHT -> {}
-        x = WIDTH -> @(0, y + 1, file)
-
-        # get the complex number at this coordinate
-        c := complex(START_RE + STEP_RE * x.0, START_IM + STEP_IM * y.0)
-        count_reached := eval_c(c, MAX_COUNT)
-
-        # colour that pixel
-        colour := get_colour(count_reached)
-        _ := write_char(colour.r, file)
-        _ := write_char(colour.g, file)
-        _ := write_char(colour.b, file)
-
-        @(x + 1, y, file)
-    } (0, 0, file)
-
-    _ := close(file)
-}
-
-_ := mandelbrot(&"mandelbrot.ppm\0")
-
-"done"
+ppm_image("mandelbrot.ppm\0", WIDTH, HEIGHT, mandelbrot)

@@ -1,0 +1,29 @@
+prepend := (text, end, char) {
+    # shift to the right
+    text := (text, i) {
+        i = 0 -> text
+        text[i] := text[i - 1]
+        @(text, i - 1)
+    } (text, end)
+    text[0] := char
+    text
+}
+
+# integer to ASCII decimal
+last_digit := (x) {"0123456789"[x % 10]}
+int_to_str := (x) {
+    buffer, end := (buffer, end, x) {
+        new_x := x / 10
+        new_x = x -> {
+            end > 0 -> buffer, end
+            buffer[0] := '0'
+            buffer, 1
+        }
+        buffer := prepend(buffer, end, last_digit(x))
+        @(buffer, end + 1, new_x)
+    } (['\x00'; 10], 0, {x < 0 -> -x; x})
+    x < 0 -> prepend(buffer, end, '-')
+    buffer
+}
+
+int_to_str
