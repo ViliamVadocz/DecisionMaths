@@ -1,6 +1,6 @@
 # local Volpe imports
 ppm_image := $ppm_image\ppm_image
-complex, eval_c := $complex
+complex := $math\complex
 
 ###### PARAMS ######
 WIDTH := 1920
@@ -18,6 +18,14 @@ BRIGHTNESS := 500
 
 STEP_IM := (END_IM - START_IM) / HEIGHT.0
 STEP_RE := (END_RE - START_RE) / WIDTH.0
+
+# finds for how many repetitions z remains bounded
+eval_c := (c) {
+    (z, count) {
+        z.norm_squared > 4.0 || count > MAX_COUNT -> count
+        @(z.mult(z).add(c), count + 1)
+    } (complex(0.0, 0.0), 0)
+}
 
 mandelbrot := (x, y) {
     c := complex(START_RE + STEP_RE * x.0, START_IM + STEP_IM * y.0)

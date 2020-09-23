@@ -18,12 +18,4 @@ complex := (re, im) {
     }
 }
 
-# finds for how many repetitions z remains bounded
-eval_c := (c, max_count) {
-    (z, count) {
-        z.norm_squared > 4.0 || count > max_count -> count
-        @(z.mult(z).add(c), count + 1)
-    } (complex(0.0, 0.0), 0)
-}
-
-complex, eval_c
+complex
