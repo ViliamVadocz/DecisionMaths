@@ -36,7 +36,7 @@ get_colour := (count_reached) {
     count_reached > MAX_COUNT -> rgb(0, 0, 0)
     # outside is bright nearvy
     brightness := count_reached * 500 / MAX_COUNT
-    rgb(brightness, 0, 0) 
+    rgb(0, brightness, brightness / 3) 
 }
 
 
