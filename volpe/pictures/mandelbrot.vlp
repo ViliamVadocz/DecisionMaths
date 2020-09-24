@@ -29,7 +29,7 @@ eval_c := (c) {
 
 mandelbrot := (x, y) {
     c := complex(START_RE + STEP_RE * x.0, START_IM + STEP_IM * y.0)
-    count_reached := eval_c(c, MAX_COUNT)
+    count_reached := eval_c(c)
 
     # inside is black
     count_reached > MAX_COUNT -> (r: 0, g: 0, b: 0)
