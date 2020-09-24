@@ -6,12 +6,14 @@ ppm_image := $ppm_image\ppm_image
 PI := $math\pi
 sphere_intersect := $math\sphere_intersection
 (
-    norm: norm,
+    norm: _,
     normalize: normalize,
     dot: dot,
-    cross: cross,
+    cross: _,
     rotation: rotation,
-    apply: apply
+    apply: apply,
+    transpose, _,
+    mat_mult: mat_mult
 ) := $math\vec
 
 
@@ -22,27 +24,39 @@ HEIGHT := 1080
 # horizonal FOV
 H_FOV := PI / 2.0
 
-CAM_POS := [0.0, 0.0, 100.0]
+CAM_POS := [0.0, 100.0, 300.0]
 CAM_ORIENT := {
     [1.0, 0.0, 0.0],
     [0.0, 1.0, 0.0],
     [0.0, 0.0, 1.0]
 }
+look_left := rotation(CAM_ORIENT._2, 0.0)
+CAM_ORIENT := mat_mult(CAM_ORIENT, look_left)
+look_down := rotation(CAM_ORIENT._1, -0.2)
+CAM_ORIENT := mat_mult(CAM_ORIENT, look_down)
 
 # ground height (XY plane)
 GROUND_LEVEL := 0.0
 
 # point light
-LIGHT_POS := [50.0, -100.0, 200.0]
+LIGHT_POS := [0.0, 500.0, 0.0]
 
 # sphere
-S_CENTRE := [100.0, 20.0, 50.0]
+S_CENTRE := [500.0, 0.0, 50.0]
 S_RADIUS := 50.0
 ##### ###### #####
 
 # vertical FOV
 V_FOV := (HEIGHT.0 / WIDTH.0) * H_FOV
 
+abs := (x) {x < 0.0 -> -x; x}
+# pick the smaller of the ones which are greater than zero
+smaller_positive := (t1, t2) {
+    t1 < 0.0 -> t2
+            t2 < 0.0 -> t1
+            t1 > t2 -> t2
+            t1
+}
 
 render := (x, y) {
     h_angle := (WIDTH / 2 - x).0 * H_FOV / WIDTH.0
@@ -52,32 +66,32 @@ render := (x, y) {
     direction := apply(rotation(CAM_ORIENT._2, -h_angle), direction)
     direction := apply(rotation(CAM_ORIENT._1, v_angle), direction)
 
-    hit_sphere, collision_pos, _ := sphere_intersect(CAM_POS, direction, S_CENTRE, S_RADIUS)
-    # we hit the sphere, check if can see light
-    hit_sphere -> {
-        to_light := LIGHT_POS - collision_pos
-        in_shadow, _, _ := sphere_intersect(collision_pos, to_light, S_CENTRE, S_RADIUS)
-        # cannot see light, but on sphere
-        in_shadow -> {r: 100, g: 100, b: 100}
-        # we are on the bright side of the sphere
-        {r: 255, g: 255, b: 255}
+    hit_sphere, t1, t2 := sphere_intersect(CAM_POS, direction, S_CENTRE, S_RADIUS)
+    # we hit the sphere, check if it can see light
+    hit_sphere && (t1 >= 0.0 || t2 >= 0.0) -> {
+        t := smaller_positive(t1, t2)
+        collision_pos := CAM_POS + direction * [t; |direction|]
+        normal := normalize(collision_pos - S_CENTRE)
+        to_light := normalize(LIGHT_POS - collision_pos)
+        brightness := 50 + ~(200.0 * dot(normal, to_light))
+        (r: brightness, g: brightness, b: brightness)
     }
 
-    # check if will collide with ground
+    # check if it will collide with the ground
     t := (GROUND_LEVEL - CAM_POS[2]) / direction[2]
     hit_ground := 0.0 >= t 
     hit_ground -> {
         collision_pos := CAM_POS + direction * [t; |direction|]
-        to_light := LIGHT_POS - collision_pos
-        in_shadow, _, _ := sphere_intersect(collision_pos, to_light, S_CENTRE, S_RADIUS)
+        to_light := normalize(LIGHT_POS - collision_pos)
+        hit_sphere, t1, t2 := sphere_intersect(collision_pos, to_light, S_CENTRE, S_RADIUS)
         # in the shadow of the sphere
-        in_shadow -> {r: 0, g: 0, b: 100}
+        hit_sphere && (t1 >= 0.0 || t2 >= 0.0) -> (r: 0, g: 50, b: 50) 
         # open ground
-        {r: 0, g: 0, b: 255}
+        (r: 0, g: 200, b: 100)
     }
 
     # otherwise black
-    r: 0, g: 0, b: 0
+    (r: 0, g: 0, b: 0)
 }
 
 ppm_image("sphere.ppm\0", WIDTH, HEIGHT, render)
