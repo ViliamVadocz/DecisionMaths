@@ -1,22 +1,26 @@
 sqrt := $$math\sqrt
-dot := $vec.dot
+
+dot := (a, b) {
+    mult := a * b
+    mult[0] + mult[1] + mult[2]
+}
 
 sphere_intersect := (origin, direction, centre, radius) {
+    # solve quadratic equation for intersections
     a := dot(direction, direction)
-    b := dot(direction, origin - centre)
+    b := 2.0 * dot(direction, origin - centre)
     c := dot(origin, origin) + dot(centre, centre) - 2.0 * dot(origin, centre) - radius * radius
 
+    # check if real solutions exist
     has_intersect := b * b >= 4.0 * a * c 
     has_intersect -> {
         m := sqrt(b * b - 4.0 * a * c)
         t1 := (-b + m) / (2.0 * a)
         t2 := (-b - m) / (2.0 * a)
-        p1 := origin + direction * [t1; |direction|]
-        p2 := origin + direction * [t2; |direction|]
-        has_intersect, p1, p2
+        has_intersect, t1, t2
     }
 
-    has_intersect, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
+    has_intersect, 0.0, 0.0
 }
 
 sphere_intersect
