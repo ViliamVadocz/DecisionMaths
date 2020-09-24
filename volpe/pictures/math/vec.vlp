@@ -51,11 +51,31 @@ apply := (mat, vec) {
     [dot(mat._0, vec), dot(mat._1, vec), dot(mat._2, vec)]
 }
 
+transpose := (mat) {
+    {
+        [mat._0[0], mat._1[0], mat._2[0]],
+        [mat._0[1], mat._1[1], mat._2[1]],
+        [mat._0[2], mat._1[2], mat._2[2]]
+    }
+}
+
+mat_mult := (A, B) {
+    # get columns
+    B0, B1, B2 := transpose(B)
+    {
+        [dot(A._0, B0), dot(A._0, B1), dot(A._0, B2)],
+        [dot(A._1, B0), dot(A._1, B1), dot(A._1, B2)],
+        [dot(A._2, B0), dot(A._2, B1), dot(A._2, B2)]
+    }
+}
+
 (
     norm: norm,
     normalize: normalize,
     dot: dot,
     cross: cross,
     rotation: rotation,
-    apply: apply
+    apply: apply,
+    transpose, transpose,
+    mat_mult: mat_mult
 )
