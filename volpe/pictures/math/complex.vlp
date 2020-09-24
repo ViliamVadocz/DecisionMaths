@@ -9,13 +9,13 @@ complex := (re, im) {
         # = (ax - by) + i(ay + bx)
         complex(re * other.re - im * other.im, re * other.im + im * other.re)
     }
-    {
+    (
         re: re,
         im: im,
         add: add,
         mult: mult,
         norm_squared: re * re + im * im
-    }
+    )
 }
 
 complex
