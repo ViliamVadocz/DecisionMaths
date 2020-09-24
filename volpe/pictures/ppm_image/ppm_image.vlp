@@ -1,8 +1,8 @@
 # importing file operations
-open := $$MinGW\include\stdio\fopen
-close := $$MinGW\include\stdio\fclose
-write_char := $$MinGW\include\stdio\fputc
-write_str := $$MinGW\include\stdio\fputs
+open := $$stdio\fopen
+close := $$stdio\fclose
+write_char := $$stdio\fputc
+write_str := $$stdio\fputs
 
 # local import
 int_to_str := $int_to_str

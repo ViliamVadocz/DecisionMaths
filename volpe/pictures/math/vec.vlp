@@ -1,0 +1,61 @@
+sqrt := $$math\sqrt
+sin := $$math\sin
+cos := $$math\cos
+
+norm := (v) {
+    squared := v * v
+    sqrt(squared[0] + squared[1] + squared[2])
+}
+
+normalize := (v) {
+    v / [norm(v); |v|]
+}
+
+dot := (a, b) {
+    mult := a * b
+    mult[0] + mult[1] + mult[2] 
+}
+
+cross := (a, b) {
+    [
+        a[1] * b[2] - a[2] * b[1],
+        a[0] * b[2] - a[2] * b[0],
+        a[0] * b[1] - a[1] * b[0]
+    ]
+}
+
+rotation := (vector, angle) {
+    u := normalize(vector)
+    c := cos(angle)
+    s := sin(angle)
+    {
+        [
+            u[0] * u[0] * (1.0 - c) + c,
+            u[0] * u[1] * (1.0 - c) - u[2] * s,
+            u[0] * u[2] * (1.0 - c) + u[1] * s
+        ],
+        [
+            u[1] * u[0] * (1.0 - c) + u[2] * s,
+            u[1] * u[1] * (1.0 - c) + c,
+            u[1] * u[2] * (1.0 - c) - u[0] * s
+        ],
+        [
+            u[2] * u[0] * (1.0 - c) - u[1] * s,
+            u[2] * u[1] * (1.0 - c) + u[0] * s,
+            u[2] * u[2] * (1.0 - c) + c
+        ]
+    }
+}
+
+apply := (mat, vec) {
+    [dot(mat._0, vec), dot(mat._1, vec), dot(mat._2, vec)]
+}
+
+(
+    norm: norm,
+    normalize: normalize,
+    dot: dot,
+    cross: cross,
+    rotation: rotation,
+    apply: apply
+)
