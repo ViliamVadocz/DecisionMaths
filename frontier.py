@@ -1,8 +1,3 @@
-optima = set()
-optima.add((2, 60))
-optima.add((3, 30))
-optima.add((6, 20))
-
 def test_solution(solution):
     global optima
     if solution in optima:
@@ -18,9 +13,23 @@ def test_solution(solution):
             break
     else:
         # solution is better in at least some way
+
+        # remove any strictly worse
+        for optimum in optima:
+            for new, old in zip(solution, optimum):
+                if new > old:
+                    break
+            else:
+                optima.remove(optimum)
+                break
+
         print(f"new optimum {solution}")
         optima.add(solution)
-    # print(optima)
+
+optima = set()
+optima.add((2, 60))
+optima.add((3, 30))
+optima.add((6, 20))
 
 test_solution((4, 25))
 test_solution((4, 25))
